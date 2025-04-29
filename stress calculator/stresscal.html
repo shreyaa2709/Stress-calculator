@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ayurvedic Stress Level Calculator</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+      background: #f5f5f5;
+      color: #333;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4a7c59;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .question {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin: 0.5rem 0;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: background 0.3s, border 0.3s;
+      cursor: pointer;
+    }
+
+    label:hover {
+      background: #eef5ec;
+    }
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    label.selected {
+      background-color: #d4edda;
+      border-color: #4caf50;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 1rem 3rem;
+      font-size: 1.25rem;
+      background: #4a7c59;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #3b6c4a;
+    }
+
+    .result {
+      background: #fff;
+      border-left: 8px solid #4a7c59;
+      padding: 2rem;
+      margin-top: 2rem;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .green { border-left-color: #4caf50; }
+    .yellow { border-left-color: #ffca28; }
+    .orange { border-left-color: #ff9800; }
+    .red { border-left-color: #f44336; }
+
+    .gauge-container {
+      position: relative;
+      width: 320px;
+      height: 160px;
+      margin: 3rem auto 2rem;
+    }
+
+    .gauge {
+      width: 100%;
+      height: 100%;
+    }
+
+    .needle {
+      stroke: #333;
+      stroke-width: 4;
+      transform-origin: 50% 100%;
+      transform: rotate(0deg);
+      transition: transform 1s ease-in-out;
+      cursor: pointer;
+    }
+
+    .score-display {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      top: 45%;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .question h3 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #4a7c59;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .gauge-container {
+        width: 260px;
+        height: 130px;
+      }
+
+      button {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+      }
+
+      .question h3 {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🌿 Ayurvedic Stress Level Calculator</h1>
+
+<form id="stressForm"></form>
+
+<button onclick="calculateStress()">Calculate Stress Level</button>
+
+<div id="gaugeMeter" class="gauge-container" style="display:none">
+  <svg class="gauge" viewBox="0 0 100 50">
+    <path fill="#4caf50" d="M0,50 A50,50 0 0,1 25,6" />
+    <path fill="#ffca28" d="M25,6 A50,50 0 0,1 50,0" />
+    <path fill="#ff9800" d="M50,0 A50,50 0 0,1 75,6" />
+    <path fill="#f44336" d="M75,6 A50,50 0 0,1 100,50" />
+    <line id="needle" class="needle" x1="50" y1="50" x2="50" y2="5" />
+  </svg>
+  <div class="score-display" id="gaugeText"></div>
+</div>
+
+<div id="result" class="result" style="display:none;"></div>
+
+<script>
+  const questions = [
+    "How would you describe your energy levels throughout the day?",
+    "How often do you experience restlessness, racing thoughts, or difficulty relaxing?",
+    "How would you rate the quality of your sleep?",
+    "How often do you experience physical symptoms of stress (headaches, tight muscles, back pain, etc.)?",
+    "How often do you feel overwhelmed by responsibilities or have difficulty managing tasks?",
+    "How is your digestion? (Appetite, bloating, frequency of bowel movements)",
+    "How often do you feel emotionally balanced and calm?",
+    "How do you usually cope with stressful situations?",
+    "How frequently do you engage in physical exercise or relaxation techniques (yoga, pranayama, walking)?",
+    "How balanced is your diet (eat seasonal, light, nourishing foods)?"
+  ];
+
+  const optionTexts = [
+    ["I feel full of energy all day", "I feel good but sometimes tired", "I feel drained or fatigued by afternoon", "I feel exhausted most of the time"],
+    ["Rarely or never", "Occasionally", "Frequently", "Almost always"],
+    ["I sleep deeply and wake up refreshed", "I sleep decently, but sometimes wake up tired", "I have trouble falling or staying asleep", "I suffer from insomnia or wake up feeling unrested"],
+    ["Rarely or never", "Occasionally", "Frequently", "Almost always"],
+    ["I feel calm and in control", "I feel overwhelmed sometimes, but I manage", "I often struggle to handle my tasks", "I am always feeling overwhelmed or stressed out"],
+    ["I have strong digestion, and no bloating", "My digestion is generally okay", "I experience occasional bloating or indigestion", "I have chronic digestive issues"],
+    ["Very often, I feel calm and content", "Often, but sometimes I get irritated or stressed", "I frequently feel anxious or overwhelmed emotionally", "I am often emotional, anxious, or irritable"],
+    ["I have healthy coping methods like meditation, yoga, or talking it out", "I try to manage stress, but it’s sometimes hard", "I tend to ignore stress or distract myself", "I let stress build up, and it overwhelms me"],
+    ["I exercise regularly (4+ times a week)", "I exercise occasionally (2–3 times a week)", "I rarely exercise", "I never exercise"],
+    ["I follow a balanced, seasonal diet with nutritious foods", "I eat relatively healthy, but not always balanced", "I often eat processed or unhealthy foods", "I have an erratic or poor diet"]
+  ];
+
+  const form = document.getElementById("stressForm");
+
+  questions.forEach((q, i) => {
+    const div = document.createElement("div");
+    div.className = "question";
+    div.innerHTML = `<h3>${i + 1}. ${q}</h3>`;
+    optionTexts[i].forEach((text, j) => {
+      const value = [10, 8, 5, 2][j];
+      const id = `q${i}_opt${j}`;
+      div.innerHTML += `
+        <label for="${id}">
+          <input type="radio" name="q${i}" id="${id}" value="${value}" onclick="highlightSelected(${i}, ${j})">
+          ${String.fromCharCode(65 + j)}) ${text}
+        </label>
+      `;
+    });
+    form.appendChild(div);
+  });
+
+  function highlightSelected(qIndex, optIndex) {
+    const labels = document.querySelectorAll(`input[name="q${qIndex}"]`);
+    labels.forEach(input => input.parentElement.classList.remove("selected"));
+    const selectedInput = document.getElementById(`q${qIndex}_opt${optIndex}`);
+    selectedInput.parentElement.classList.add("selected");
+  }
+
+  function calculateStress() {
+    const formData = new FormData(form);
+    let score = 0;
+    for (let value of formData.values()) score += parseInt(value);
+
+    const resultDiv = document.getElementById("result");
+    const gauge = document.getElementById("gaugeMeter");
+    const needle = document.getElementById("needle");
+    const gaugeText = document.getElementById("gaugeText");
+
+    let message = "", color = "";
+    if (score >= 90) {
+      message = "🟢 <strong>Balanced Ojas</strong> ";
+      color = "green";
+    } else if (score >= 75) {
+      message = "🟡 <strong>Mild Stress</strong>";
+      color = "yellow";
+    } else if (score >= 50) {
+      message = "🟠 <strong>Moderate Stress</strong> ";
+      color = "orange";
+    } else {
+      message = "🔴 <strong>High Stress</strong> ";
+      color = "red";
+    }
+
+    resultDiv.className = `result ${color}`;
+    resultDiv.innerHTML = `<h2>Your Score: ${score}/100</h2><p>${message}</p>`;
+    resultDiv.style.display = "block";
+    gauge.style.display = "block";
+
+    let angle = Math.min(180, (score / 100) * 180);
+    needle.style.transition = "transform 2s ease-out";
+    needle.style.transform = `rotate(${angle}deg)`;
+    gaugeText.innerHTML = `${score}/100`;
+
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  // Allow user to drag the needle
+  let isDragging = false;
+  const needle = document.getElementById("needle");
+
+  needle.addEventListener("mousedown", function(e) {
+    isDragging = true;
+    const startX = e.clientX;
+    const startAngle = getAngleFromMouse(startX);
+
+    function moveNeedle(e) {
+      if (isDragging) {
+        const currentX = e.clientX;
+        const angle = getAngleFromMouse(currentX);
+        updateNeedleAngle(angle);
+      }
+    }
+
+    function stopDragging() {
+      isDragging = false;
+      document.removeEventListener("mousemove", moveNeedle);
+      document.removeEventListener("mouseup", stopDragging);
+    }
+
+    function getAngleFromMouse(x) {
+      const offsetX = x - needle.getBoundingClientRect().left;
+      const angle = Math.min(180, Math.max(0, (offsetX / 320) * 180)); // Limit to 180 degrees
+      return angle;
+    }
+
+    function updateNeedleAngle(angle) {
+      needle.style.transform = `rotate(${angle}deg)`;
+      const score = Math.round((angle / 180) * 100);
+      document.getElementById("gaugeText").innerHTML = `${score}/100`;
+    }
+
+    document.addEventListener("mousemove", moveNeedle);
+    document.addEventListener("mouseup", stopDragging);
+  });
+</script>
+
+</body>
+</html>
