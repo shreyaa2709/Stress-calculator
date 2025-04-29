@@ -9,3 +9,5 @@ The tool presents 10 multiple-choice questions related to lifestyle, emotional h
 🟠 Moderate Stress (50–74)
 
 🔴 High Stress (Below 50)
+
+A dynamic SVG-based gauge meter visually represents the user’s stress score with a rotating needle and a color-coded arc. The gauge animates smoothly upon calculation, providing immediate visual feedback. The stress score is also displayed numerically beneath the gauge, along with a tailored message encouraging wellness.
